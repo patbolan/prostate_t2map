@@ -21,75 +21,82 @@ from PIL import Image
 import cmasher as cmr
 
 
-
-#%%  Code to marge a bunch of niftis into one big one, for review
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/FIT_NLLS'
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_IMAGENET'
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_SS_INVIVO'
-
-# dirname = '/home/pbolan/prj/prostate_t2map/datasets/synth_imagenet_1k_test/labels'
-# #combine_files(dirname, path.join(dirname, 'allfiles.nii.gz'))
-# combine_files(dirname)
-
-# sys.exit()
-
-
-
 #%%
-# Lets do A-B comparison
-# A will be reference
-dirnameA = '/home/pbolan/prj/prostate_t2map/datasets/synth_imagenet_1k_test/labels'
+# Compare predictions with true T values for all methods
+dirnameA = path.join(get_datasets_dir(), 'synth_imagenet_1k_test/labels')
 
-method_names = ['FIT_LOGLIN', 'FIT_NLLS', 'FIT_NLLS_BOUND', 'FIT_NLLS_RICE', 
+# Select an example case
+# Nicest example is 105, but it include a face, which is a problem for 
+# medarxiv and some publications. Other examples that show detail, range 
+# of T2 values, noise regions, etc include:
+# 10, 170, 346, 348, 388, 1,47,70,97, 405
+# Sample #1 is good and does not include faces
+sample_number = 1
+fnameA = f'synth_{sample_number:06d}.nii.gz'
+fnameB = f'preds_{sample_number:06d}.nii.gz'
+
+# Note - use make_demo_figure.py to generate the images at the top
+
+# Select methods
+# For the paper figure, there are 14 predictions. 
+# To lay it out in 3 rows by 5 columns, I will double up the FIT_NLLS_RICE
+method_names = ['FIT_LOGLIN', 'FIT_NLLS', 'FIT_NLLS_BOUND', 'FIT_NLLS_RICE', 'FIT_NLLS_RICE',
                 'NN1D_IMAGENET', 'NN1D_URAND', 'NN1D_SS_IMAGENET', 'NN1D_SS_URAND', 'NN1D_SS_INVIVO', 
                 'CNN_IMAGENET', 'CNN_URAND', 'CNN_SS_IMAGENET', 'CNN_SS_URAND', 'CNN_SS_INVIVO']
 
-for method in method_names:
-    
-    dirnameB = f'/home/pbolan/prj/prostate_t2map/predictions/IMAGENET_TEST_1k/{method}'
-    #dirnameB = '/home/pbolan/prj/prostate_t2map/predictions/IMAGENET_TEST_1k/CNN_IMAGENET'
-    #dirnameB = '/home/pbolan/prj/prostate_t2map/predictions/IMAGENET_TEST_1k/NN1D_URAND'
-    
-    # 10, 105 are nice examples. Detail, range of T2 values, noise regions
-    sample_number = 105
-    fnameA = f'synth_{sample_number:06d}.nii.gz'
-    fnameB = f'preds_{sample_number:06d}.nii.gz'
-    
-    tmpA = nib.load(path.join(dirnameA, fnameA)).get_fdata()    
-    tmpB = nib.load(path.join(dirnameB, fnameB)).get_fdata()    
-    T_A = tmpA[:,:,0,1]
-    T_B = tmpB[:,:,0,1]
-    
-    # Transform so they match itksnaps view
-    #T_A = np.rot90(T_A[::-1, :])
-    #T_B = np.rot90(T_B[::-1, :])
-    diff = T_B - T_A
-    
-    
-    # # Show the S0 too, quickly
-    # fig,ax = plt.subplots(1,1,figsize=[4,4])
-    # ax.imshow(tmpA[:,:,0,0], vmin=0, vmax=3)
-    # plt.show()
-    
-    figsize=[12,8]
-    fig, ax = plt.subplots(1,1,figsize=figsize)
-    im = ax.imshow(T_B, vmin=0, vmax=4, interpolation='none')
-    plt.colorbar(im)
-    plt.title(method)
-    plt.axis('off')
-    plt.show()
+# Settings for this figure
+print_stats = False
+plot_figure = True
+plot_figure_titles = False
+plot_diff = True
 
-    fig, ax = plt.subplots(1,1,figsize=figsize)
-    im = ax.imshow(diff, vmin=-2, vmax=2, cmap=cmr.guppy_r, interpolation='none')
-    plt.colorbar(im)
-    plt.title(method)
-    plt.axis('off')
-    plt.show()
+if plot_figure: 
+    figsize = [12,8]
+    figsize = [18,12]
+    fig, axs = plt.subplots(3,5, figsize=figsize)
 
+# loop over rows and columns
+for irow in range(0,3):
+    for icol in range(0,5):
+        idx = icol + irow * 5
+        print(f'({idx}) {method_names[idx]}: {irow},{icol}')
+        method = method_names[idx]        
 
+        # Get the images, calculate difference    
+        dirnameB = path.join(get_predictions_dir(), f'IMAGENET_TEST_1k/{method}')        
+        tmpA = nib.load(path.join(dirnameA, fnameA)).get_fdata()    
+        tmpB = nib.load(path.join(dirnameB, fnameB)).get_fdata()    
+        T_A = tmpA[:,:,0,1]
+        T_B = tmpB[:,:,0,1]
+        diff = T_B - T_A
+    
+        if plot_figure:    
+            ax = axs[irow,icol]
+            
+            if plot_diff: 
+                im = ax.imshow(diff, vmin=-2, vmax=2, cmap=cmr.guppy_r, interpolation='none')
+            else:
+                im = ax.imshow(T_B, vmin=0, vmax=4, interpolation='none')
+            if plot_figure_titles:
+                ax.set_title(method, fontsize=8) 
+            ax.set_axis_off()
+        
+    
+        if print_stats:
+            print(f'median absolute error {np.median(np.abs(diff))}, median error {np.median(diff)}')
 
-    # Print stats underneath
-    print(f'median absolute error {np.median(np.abs(diff))}, median error {np.median(diff)}')
+# To manually make the fig you may need a colorbar. It is not in the correct 
+# layout, but you can uncomment this and arrange it in the figure later
+#plt.colorbar(im)
+
+# Some manual tweaks to get the montage right
+plt.subplots_adjust(left=0.1,
+                    bottom=0.1,
+                    right=0.9,
+                    top=0.9,
+                    wspace=0.1,
+                    hspace=0.0)
+plt.show()
     
 
 

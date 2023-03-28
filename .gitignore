@@ -1,0 +1,7 @@
+# Datasets - these are too big, should be generated #
+datasets
+predictions
+plots
+__pycache__
+
+

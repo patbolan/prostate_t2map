@@ -216,12 +216,12 @@ def compare_performance_by_dataset(df_T):
 #%%
 def evaluate_partA():
         
-    datasets = get_partA_datasets()
     methods = get_partA_methods()
+    datasets = get_partA_datasets()
     
     df_S0, df_T = make_big_df(datasets=datasets, methods=methods)
-    plot_metrics(df_T)
-    print_metrics(df_T)
+    #plot_metrics(df_T)
+    print_metrics(df_T) # This makes the data for the table 
 
 def test_plot():
     datasets = ['IMAGENET_VALIDATION_1k']

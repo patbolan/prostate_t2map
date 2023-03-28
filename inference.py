@@ -125,7 +125,7 @@ def fit_1d_parallel(eta, imgseries, model_name):
 
 def infer_1d(eta, imgseries, model_name):
     
-    model_root = '/home/pbolan/prj/prostate_t2map/models'
+    model_root = get_models_dir()
 
     if model_name=='NN1D_URAND':
         model_scripted_filename = path.join(model_root, 'nn1d_urand.pt')
@@ -159,7 +159,7 @@ def infer_1d(eta, imgseries, model_name):
 #%%
 def infer_2d(eta, imgseries, model_name='CNN_IMAGENET'):
 
-    model_root = '/home/pbolan/prj/prostate_t2map/models'
+    model_root = get_models_dir()
     
     if model_name=='CNN_IMAGENET':
         model_scripted_filename = path.join(model_root, 'cnn_imagenet.pt')
@@ -254,7 +254,7 @@ class ScaleTransformSpecial:
 def get_inference_dataloader(ds_name):
     
     # Find source images
-    source_root = '/home/pbolan/prj/prostate_t2map/datasets'    
+    source_root = get_datasets_dir() 
     #dataset_dir, is_validation_split, is_synthetic = parse_dataset_name(ds_name)
     dataset_dir, is_validation_split, is_synthetic, modification_code, number = parse_dataset_name(ds_name)
 
@@ -320,7 +320,7 @@ def get_inference_dataloader(ds_name):
 def infer_parameters(method, ds_name):
     
     # Prepare output area
-    output_dir = path.join('/home/pbolan/prj/prostate_t2map/predictions', ds_name, method)
+    output_dir = path.join(get_predictions_dir(), ds_name, method)
     if path.exists(output_dir):
         print(f"Inference already exists for: \n  {output_dir}\nSkipping.")
         return
@@ -400,7 +400,7 @@ def perform_partA_inference():
 def perform_partB_inference():
     # Same as A, different dataset
     start = time.time()
-    ds_names = ['INVIVO2D_SET3']
+    ds_names = ['INVIVO2D_SET3', 'INVIVO2D_SET1'] # Set 1 is only for demo/testing
     methods = ['FIT_LOGLIN', 'FIT_NLLS', 'FIT_NLLS_BOUND', 'FIT_NLLS_RICE',
                'NN1D_IMAGENET', 'NN1D_URAND', 'NN1D_SS_IMAGENET', 'NN1D_SS_URAND', 'NN1D_SS_INVIVO',
                'CNN_IMAGENET', 'CNN_URAND', 'CNN_SS_IMAGENET', 'CNN_SS_URAND', 'CNN_SS_INVIVO']

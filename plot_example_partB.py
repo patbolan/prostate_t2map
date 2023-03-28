@@ -4,7 +4,7 @@
 Created on Sat Sep 24 09:37:30 2022
 
 To create the paper figure from here, run several times with different values
-of dirnameB 
+of dirnameB and the ROI file (muscle/prostate)
 
 @author: pbolan
 """
@@ -26,16 +26,7 @@ import cmasher as cmr
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import r2_score
 
-# #%%
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/FIT_NLLS'
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_IMAGENET'
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_SS_INVIVO'
-# dirname = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET1/FIT_NLLS'
 
-# #combine_files(dirname, path.join(dirname, 'allfiles.nii.gz'))
-# combine_files(dirname)
-
-# sys.exit()
 
 
 #%% de
@@ -58,10 +49,9 @@ def make_BA_plot(A, B):
 #%%
 # Lets do A-B comparison
 # A will be reference
-dirnameA = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/FIT_NLLS'
-dirnameB = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_IMAGENET'
-dirnameB = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/NN1D_URAND'
-#dirnameB = '/home/pbolan/prj/prostate_t2map/predictions/INVIVO2D_SET3/CNN_SS_INVIVO'
+predictions_dir = get_predictions_dir()
+dirnameA = path.join(predictions_dir, 'INVIVO2D_SET3/FIT_NLLS')
+dirnameB = path.join(predictions_dir, 'INVIVO2D_SET3/CNN_SS_INVIVO')
 fname = 'preds_000277.nii.gz'
 
 tmpA = nib.load(path.join(dirnameA, fname)).get_fdata()    
@@ -122,10 +112,11 @@ print(f'Pearson R {pearson_stat}, p={pearson_pvalue:.6f}')
 print(f'Spearman rho {spearman_rho}, p={spearman_pvalue:.6f}')
 #%%
 # Load the roi
-roi_file = '/home/pbolan/prj/prostate_t2map/example_partB/invivo_set3_000277/roi_prostate.tif'
+roi_file = path.join(get_base_dir(), 'example_partB/invivo_set3_000277/roi_prostate.tif')
+roi_file = path.join(get_base_dir(), 'example_partB/invivo_set3_000277/roi_muscle.tif')
 roi_img = np.array(Image.open(roi_file))
 
-# For some reason, the values are 1.5
+# Normalize, flip both directions
 roi_img[roi_img>0] = 1
 roi_img = roi_img[::-1,::-1]
 

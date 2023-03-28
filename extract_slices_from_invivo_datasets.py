@@ -11,7 +11,7 @@ import sys
 import glob
 
 import nibabel as nib
-from utility_functions import save_nifti
+from utility_functions import save_nifti, get_datasets_dir
 
 #%%
 def extract_2D_from_3D(source_dataset, target_dataset):
@@ -43,7 +43,8 @@ def extract_2D_from_3D(source_dataset, target_dataset):
 
 #%%
 def extract_all():
-    dataset_root = '/home/pbolan/prj/prostate_t2map/datasets'
+    dataset_root = get_datasets_dir()
+    
     
     # Run this for datasets 1-3 inclusive
     for idx in range(0,3):    

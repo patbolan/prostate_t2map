@@ -70,11 +70,6 @@ def prepare_loaders(data_dir, show_example=False):
             for image_name, label_name in zip(train_images, train_labels) ]   
         in_vivo = False    
 
-    # # HACK
-    # # Trying to add noise to the invivo data so the comparison with CNN_IMAGENET
-    # # is more fair
-    # in_vivo = False
-    # in_vivo_withnoise = True
 
     # Go with 80/20 train/val split
     split_index = int(0.8 * len(train_images))
@@ -95,35 +90,6 @@ def prepare_loaders(data_dir, show_example=False):
                 EnsureTyped(keys=["image"]),
                 IntensityStatsd(keys=["image"], ops=['max'], key_prefix='orig'),
                 ScaleTransformSpecial(),
-            ]
-        )
-        val_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                EnsureChannelFirstd(keys=["image"]),
-                Orientationd(keys=["image"], axcodes="RAS"),
-                Spacingd(keys=["image"], pixdim=(
-                    1., 1., 1.), mode=("bilinear")),
-                EnsureTyped(keys=["image"]),
-                IntensityStatsd(keys=["image"], ops=['max'], key_prefix='orig'),
-                ScaleTransformSpecial(),
-            ]
-        )  
-    elif in_vivo_withnoise:
-        # Same as in_vivo, but after scaling, I'm adding Rician noise 
-        print("WARNING!!!! This is my invivo noise hack")
-        train_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                EnsureChannelFirstd(keys=["image"]),
-                Orientationd(keys=["image"], axcodes="RAS"),
-                Spacingd(keys=["image"], pixdim=(
-                    1., 1., 1.), mode=("bilinear")),
-                EnsureTyped(keys=["image"]),
-                IntensityStatsd(keys=["image"], ops=['max'], key_prefix='orig'),
-                ScaleTransformSpecial(),
-                RandRicianNoised(keys=["image"], 
-                                 prob=1.0, mean=0.0, std=0.1, channel_wise=True, relative=False, sample_std=True),
             ]
         )
         val_transforms = Compose(
@@ -165,14 +131,7 @@ def prepare_loaders(data_dir, show_example=False):
                 ScaleTransformSpecial(),
             ]
         ) 
-    
-    
-    # # HACK Test this thing out
-    # tmp_ds = Dataset(data=train_files, transform=train_transforms)
-    # #tmp_loader = DataLoader(tmp_ds, batch_size=5, shuffle=True, num_workers=4)
-    # tmp_loader = DataLoader(tmp_ds, batch_size=1)
-    # tmp_data = first(tmp_loader)
-    
+        
     
     if show_example:
         # The monai loader brings the data in as [batch, channels, x, y, z]
@@ -407,8 +366,8 @@ def training_loop(n_epochs, optimizer, loss_type, model, train_loader, val_loade
 def train_cnn(ds_name, loss_type, model_filename=None, length=10, ):
 
     # Filenames    
-    dataset_dir = path.join('/home/pbolan/prj/prostate_t2map/datasets/', ds_name)
-    model_dir = '/home/pbolan/prj/prostate_t2map/models'
+    dataset_dir = path.join(get_datasets_dir(), ds_name)
+    model_dir = get_models_dir()
     model_fullfile = path.join(model_dir, model_filename)
 
     if model_filename is None:

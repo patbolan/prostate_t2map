@@ -2,8 +2,7 @@
 Code to develop and evaluate NNs for parameter estimation
 
 This archive contains all the code and models used in the following manuscript:
-Improved Quantitative Parameter Estimation for Prostate T2 Relaxometry using Convolutional Neural Networks
-[CITATION TBD]
+Improved Quantitative Parameter Estimation for Prostate T2 Relaxometry using Convolutional Neural Networks https://doi.org/10.1101/2023.01.11.23284194
 
 You can use this code to generate the synthesized data, train the models, run inference, and create all the figures in the paper. However, this process is not fully automated - you will need to do this in parts, with some manual steps. You can use the pre-trained models, or retrain them youself with a few days of compute time. 
 
@@ -38,20 +37,21 @@ All of those files are 3D niftis, and they need to be extracted into 2D slices. 
 
 5) Perform inference.
 In the file inference.py, the inference is broken into 3 parts:
-part A: synthetic data. 
-part B: invivo
-part C: invivo with noise addition. 
+part A: synthetic data; 
+part B: inviv;
+part C: invivo with noise addition; 
 You can run inference.py to do all of them, or just run the parts you want. 
-This will create the predicted values in the folder $BASE/predictions, about 7GB
+This will create the predicted values in the folder $BASE/predictions, about 7GB.
 
 
 6) Run analyses and generate plots. 
 This is more manual, and done in several steps. While developing I often used inline graphics (%matplotlib inline), but for the paper I used Qt as the renderer, saving png and svg files and arranging them into figures manually. 
-make_demo_figure.py will make the plots for figure 1. You'll need to run several times, uncommenting lines to make all sections.
-plot_example_partA.py will make the plots for figure 3
-make_plots_partA.py will do all per-slice and per-pixel evaluations on synthetic data, figures 4 and 5. Will take a few hours for the per-pixel stuff. PR
-plot_example_partB.py will make plots for figure 6
-comparison_matrix.py will make figure 7
-evaluate_partC_byslice.py will make figure 8
+make_demo_figure.py will make the plots for figure 1, and the top section for figures 3 and S1. You'll need to run several times, changing the swtich value to make all plots.
+plot_example_partA.py will make the plots for figure 3.
+make_plots_partA.py will do all per-slice and per-pixel evaluations on synthetic data, figures 4 and 5. 
+Will take a few hours for the per-pixel stuff. 
+plot_example_partB.py will make plots for figure 6. 
+plot_example_partC.py will make figure 7. 
+evaluate_partC_byslice.py will make figure 8. 
 
 

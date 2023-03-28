@@ -21,12 +21,21 @@ from skimage.metrics import normalized_mutual_information as nmi
 from skimage.measure import blur_effect
 
 
-#%% Project paths are defined here
+#%% Project paths are defined here, only once
+def get_base_dir(): 
+    return '/home/pbolan/dev/prostate_t2map'
+
 def get_plot_dir():
-    return '/home/pbolan/prj/prostate_t2map/plots'
+    return path.join(get_base_dir(), 'plots')
 
 def get_datasets_dir():
-    return '/home/pbolan/prj/prostate_t2map/datasets'
+    return path.join(get_base_dir(), 'datasets')
+
+def get_models_dir():
+    return path.join(get_base_dir(), 'models')
+
+def get_predictions_dir():
+    return path.join(get_base_dir(), 'predictions')
 
 
 #%%
@@ -248,19 +257,19 @@ def parse_dataset_name_OLDER(ds_name):
 #%%
 def get_evaluation_paths(model_name, ds_name): 
        
-    output_dir = path.join('/home/pbolan/prj/prostate_t2map/predictions', ds_name, model_name)
+    output_dir = path.join(get_base_dir(), 'predictions', ds_name, model_name)
     
     dataset_dir, _, _, _, _= parse_dataset_name(ds_name)
 
-    ds_labels_dir = path.join('/home/pbolan/prj/prostate_t2map/datasets', f'{dataset_dir}', 'labels')   
-    ds_images_dir = path.join('/home/pbolan/prj/prostate_t2map/datasets', f'{dataset_dir}', 'images')   
+    ds_labels_dir = path.join(get_datasets_dir(), f'{dataset_dir}', 'labels')   
+    ds_images_dir = path.join(get_datasets_dir(), f'{dataset_dir}', 'images')   
     
     return output_dir, ds_labels_dir, ds_images_dir
 
 #%% 
 def get_noisefile(ds_name):
     dataset_dir, _, _, _, _= parse_dataset_name(ds_name)
-    return path.join('/home/pbolan/prj/prostate_t2map/datasets', f'{dataset_dir}', 'noisevalues.csv')   
+    return path.join(get_datasets_dir(), f'{dataset_dir}', 'noisevalues.csv')   
     
 
 #%%

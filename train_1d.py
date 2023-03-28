@@ -35,7 +35,7 @@ import pickle
 from torch_lr_finder import LRFinder, TrainDataLoaderIter
 
 from exp_fitting import *
-from utility_functions import show_model_details, get_eta, plot_training_history
+from utility_functions import *
 
 #%%
 def fit_exp_nlls_2p_special(eta, ydata):
@@ -82,16 +82,18 @@ class OneDExpDatasetFromImages(Dataset):
             image_file = path.join(image_dir, f'synth_{img_idx:06d}.nii.gz')            
             label_file = path.join(label_dir, f'synth_{img_idx:06d}.nii.gz')    
 
-            img = nib.load(image_file).get_fdata()
+            imgseries = nib.load(image_file).get_fdata()
             
             # Perform normalization here , per image (happens to be one slice)
-            normalization_scaling = 1.0 / img.max()
-            image_cache[idx,:,:,:] = img[:,:,0,:] * normalization_scaling
+            normalization_scaling = 1.0 / imgseries.max()
+            image_cache[idx,:,:,:] = imgseries[:,:,0,:] * normalization_scaling
 
             label = nib.load(label_file).get_fdata()
             
             # Also need to scale S0
-            label[:,:,:,1] = label[:,:,:,1] * normalization_scaling
+            # BUG - had been scaling T by S0max. Corrected here.
+            #label[:,:,:,1] = label[:,:,:,1] * normalization_scaling
+            label[:,:,:,0] = label[:,:,:,0] * normalization_scaling
             label_cache[idx,:,:,:] = label[:,:,0,:]        
             
             
@@ -166,11 +168,11 @@ class OneDExpDatasetFromImages_Invivo(Dataset):
             img_idx = idx+image_offset
             image_file = path.join(image_dir, f'invivo_{img_idx:06d}.nii.gz')            
 
-            img = nib.load(image_file).get_fdata()
+            imgseries = nib.load(image_file).get_fdata()
             
             # Perform normalization here , per image (happens to be one slice)
-            normalization_scaling = 1.0 / img.max()
-            image_cache[idx,:,:,:] = img[:,:,0,:] * normalization_scaling
+            normalization_scaling = 1.0 / imgseries.max()
+            image_cache[idx,:,:,:] = imgseries[:,:,0,:] * normalization_scaling
 
                         
         self.time_series = image_cache.reshape([num_images*Nsize*Nsize, Np]).copy()
@@ -424,8 +426,8 @@ class FullyConnectedNN(nn.Module):
 def train_1dnn(ds_name, loss_type, model_filename=None, n_train_images=80, n_val_images=20, length=10):
 
     # Filenames    
-    dataset_dir = path.join('/home/pbolan/prj/prostate_t2map/datasets/', ds_name)
-    model_dir = '/home/pbolan/prj/prostate_t2map/models'
+    dataset_dir = path.join(get_datasets_dir(), ds_name)
+    model_dir = get_models_dir()
     model_fullfile = path.join(model_dir, model_filename)
     
     if model_filename is None:
