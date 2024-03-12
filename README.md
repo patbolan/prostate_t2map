@@ -7,7 +7,7 @@ Improved Quantitative Parameter Estimation for Prostate T2 Relaxometry using Con
 You can use this code to generate the synthesized data, train the models, run inference, and create all the figures in the paper. However, this process is not fully automated - you will need to do this in parts, with some manual steps. You can use the pre-trained models, or retrain them youself with a few days of compute time. 
 
 
-1) Configure python. You can use the requirements_basic2_20230103.txt file to create a python virtual environment matching mine. I ran all of the code for this paper from the Spyder developmennt environment.
+1) Configure python. You can use the requirements_basic2_20230103.txt file to create a python virtual environment matching mine. I ran all of the code for this paper from the Spyder development environment.
 
 
 2) Download ImageNet data. From this website: 
