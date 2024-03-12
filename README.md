@@ -6,17 +6,13 @@ Improved Quantitative Parameter Estimation for Prostate T2 Relaxometry using Con
 
 You can use this code to generate the synthesized data, train the models, run inference, and create all the figures in the paper. However, this process is not fully automated - you will need to do this in parts, with some manual steps. You can use the pre-trained models, or retrain them youself with a few days of compute time. 
 
+1) Configure python. You can use the requirements.txt file to create a python virtual environment matching mine. I ran all of the code for this paper from the Spyder development environment.
 
-1) Configure python. You can use the requirements_basic2_20230103.txt file to create a python virtual environment matching mine. I ran all of the code for this paper from the Spyder development environment.
-
-
-2) Download ImageNet data. From this website: 
-https://www.kaggle.com/datasets/samfc10/ilsvrc2012-validation-set
-Download the archive with 50,000 files to your system. On my system they are stored in /mnt/data/ReferenceDatasets/imagenet_sm. 
-
+2) Download ImageNet data. You need to download the full ImageNet dataset (165GB), even though we only used the validation dataset (50k images, 6.4GB) for this paper. Go to this website:
+https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data
+agree to the ImageNet competition rules and download the full dataset. The validation data are in ILSVRC/Data/CLS-LOC/val/, with first file ILSVRC2012_val_00000001.JPEG (a sea snake on a beach)
 
 3) Update paths. In the python file utility_functions.py I have several hardwired paths, either relative to my "base" path (/home/pbolan/prostate_t2map), or pointing to a location with the downloaded imagenet data. You'll want to update these for your system.
-
 
 4) Download and organize the in vivo data. 
 Under the base directory create a "datasets" directory. The publicly available files are available here: https://conservancy.umn.edu/handle/11299/243192
@@ -28,14 +24,12 @@ Create a folder called $BASE/datasets/invivo_set3/images/, and move all the *.ni
 
 All of those files are 3D niftis, and they need to be extracted into 2D slices. To do this, run the script extract_slices_from_invivo_datasets.py. 
 
-
-3) Generate synthetic data. Run build_synthetic_datasets.py to build the testing and training datasets. Note I have a big (10k) training set, and a smaller one (1k) that I used for development. 
-
-
-4) Train models. Run train_1d.py and train_cnn.py. These will take a few days, depending on your system, and will write out all the models into $BASE/models/*.pt. You can skip this and just use the pre-trained models available on github.
+5) Generate synthetic data. Run build_synthetic_datasets.py to build the testing and training datasets. Note I have a big (10k) training set, and a smaller one (1k) that I used for development. 
 
 
-5) Perform inference.
+6) Train models. Run train_1d.py and train_cnn.py. These will take a few days, depending on your system, and will write out all the models into $BASE/models/*.pt. You can skip this and just use the pre-trained models available on github.
+
+7) Perform inference.
 In the file inference.py, the inference is broken into 3 parts:
 part A: synthetic data; 
 part B: inviv;
@@ -43,8 +37,7 @@ part C: invivo with noise addition;
 You can run inference.py to do all of them, or just run the parts you want. 
 This will create the predicted values in the folder $BASE/predictions, about 7GB.
 
-
-6) Run analyses and generate plots. 
+8) Run analyses and generate plots. 
 This is more manual, and done in several steps. While developing I often used inline graphics (%matplotlib inline), but for the paper I used Qt as the renderer, saving png and svg files and arranging them into figures manually. 
 make_demo_figure.py will make the plots for figure 1, and the top section for figures 3 and S1. You'll need to run several times, changing the switch value to make all plots.
 plot_example_partA.py will make the plots for figure 3.
