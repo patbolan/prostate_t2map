@@ -29,7 +29,7 @@ Create a folder called $BASE/datasets/invivo_set3/images/, and move all the *.ni
 All of those files are 3D niftis, and they need to be extracted into 2D slices. To do this, run the script extract_slices_from_invivo_datasets.py. 
 
 
-3) Generate synthetic data. Run build_synthetic_datasets.py to build the testing and training datasets. Not I have a big (10k) training set, and a smaller one (1k) that I used for development. 
+3) Generate synthetic data. Run build_synthetic_datasets.py to build the testing and training datasets. Note I have a big (10k) training set, and a smaller one (1k) that I used for development. 
 
 
 4) Train models. Run train_1d.py and train_cnn.py. These will take a few days, depending on your system, and will write out all the models into $BASE/models/*.pt. You can skip this and just use the pre-trained models available on github.
@@ -46,7 +46,7 @@ This will create the predicted values in the folder $BASE/predictions, about 7GB
 
 6) Run analyses and generate plots. 
 This is more manual, and done in several steps. While developing I often used inline graphics (%matplotlib inline), but for the paper I used Qt as the renderer, saving png and svg files and arranging them into figures manually. 
-make_demo_figure.py will make the plots for figure 1, and the top section for figures 3 and S1. You'll need to run several times, changing the swtich value to make all plots.
+make_demo_figure.py will make the plots for figure 1, and the top section for figures 3 and S1. You'll need to run several times, changing the switch value to make all plots.
 plot_example_partA.py will make the plots for figure 3.
 make_plots_partA.py will do all per-slice and per-pixel evaluations on synthetic data, figures 4 and 5. 
 Will take a few hours for the per-pixel stuff. 
