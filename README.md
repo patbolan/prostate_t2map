@@ -6,7 +6,7 @@ Improved Quantitative Parameter Estimation for Prostate T2 Relaxometry using Con
 
 You can use this code to generate the synthesized data, train the models, run inference, and create all the figures in the paper. However, this process is not fully automated - you will need to do this in parts, with some manual steps. You can use the pre-trained models, or retrain them youself with a few days of compute time. 
 
-1) Configure python. You can use the requirements.txt file to create a python virtual environment matching mine. I ran all of the code for this paper from the Spyder development environment.
+1) Configure python. You can use the requirements.txt file to create a python virtual environment matching mine. I have never been able to get that to fully install an environment correctly, but it is a good starting point. I ran all of the code for this paper from the Spyder development environment, and for that I usually have to install a specific older verion (5.2.2) then upgrade to the latest, because there are missing packagesin the later versions.
 
 2) Download ImageNet data. You need to download the full ImageNet dataset (165GB), even though we only used the validation dataset (50k images, 6.4GB) for this paper. Go to this website:
 https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data
