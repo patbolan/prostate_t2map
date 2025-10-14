@@ -2,6 +2,9 @@
 datasets
 predictions
 plots
-__pycache__
+__pycache__/
+venv/
+models/
+example_partB/
 
 

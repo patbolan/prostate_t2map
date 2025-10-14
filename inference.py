@@ -11,6 +11,11 @@ import glob
 import nibabel as nib
 import torch
 import time
+import warnings
+
+# Suppress the pkg_resources deprecation warning
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="pkg_resources")
 
 from monai.transforms import (
     AsDiscrete,
@@ -157,8 +162,14 @@ def infer_1d(eta, imgseries, model_name):
     return S0, T
 
 #%%
-def infer_2d(eta, imgseries, model_name='CNN_IMAGENET'):
+# 20251013 Implemented a cache to save ram and time. Loads each model only once.
+_model_cache = {}
 
+def load_model_cached(model_name):
+    """Load model once and cache it"""
+    if model_name in _model_cache:
+        return _model_cache[model_name]
+    
     model_root = get_models_dir()
     
     if model_name=='CNN_IMAGENET':
@@ -171,34 +182,46 @@ def infer_2d(eta, imgseries, model_name='CNN_IMAGENET'):
         model_scripted_filename = path.join(model_root, 'cnn_ss_urand.pt')
     elif model_name=='CNN_SS_INVIVO':
         model_scripted_filename = path.join(model_root, 'cnn_ss_invivo.pt')
-    elif model_name=='CNN_IMAGENET':
-        model_scripted_filename = path.join(model_root, 'cnn_imagenet.pt')
     else:
         raise Exception(f'ERROR: model <{model_name}> not recognized')
 
     model = torch.jit.load(model_scripted_filename)
     model.eval()
-    
-    #device = torch.device('cuda:0')
     device = torch.device('cpu')
     model.to(device)
     
+    _model_cache[model_name] = model
+    return model
+
+def infer_2d(eta, imgseries, model_name='CNN_IMAGENET'):
+
+    model = load_model_cached(model_name)
+    
     # Can run the multiple spatial positions like a batch inference
-    # Model operates on 2D inputs, expects [Nbatch, Np, Nx, Ny]
-    # Here there is no batch, but we'll put the z-dim in front to process the
-    # slices as different memberes of a batch
     [Nx, Ny, Nz, Np] = imgseries.shape
     inputs = imgseries.permute([2,3,0,1])
-    inputs = inputs.to(device)
-    outputs = model(inputs)
+    
+    with torch.no_grad():  # Important for memory efficiency
+        outputs = model(inputs)
     
     # Flip the batch dimension back to Nz (slice)
     outputs = outputs.permute([2, 3, 0, 1]).detach().cpu().numpy()
     S0 = outputs[:,:,:,0]
     T = outputs[:,:,:,1]
     
-    return S0, T
+    # Clean up intermediate tensors
+    del inputs
+    del outputs
     
+    return S0, T
+
+def clear_model_cache():
+    """Call this when done with inference to free memory"""
+    global _model_cache
+    for model in _model_cache.values():
+        del model
+    _model_cache.clear()
+    torch.cuda.empty_cache() if torch.cuda.is_available() else None
 
 #%% Inference/Estimation/prediction code
 # Takes a time series as input, predicts S0 and T
@@ -267,7 +290,9 @@ def get_inference_dataloader(ds_name):
                      for image_name, label_name in zip(all_images, all_labels)]
     else:        
         test_dict = [{"image": image_name} for image_name in all_images]
-      
+    print(f'Found {len(test_dict)} files in {path.join(source_root, dataset_dir, 'images', '*nii.gz')}')
+
+
     # Only take the last 20% if this is from a "training" dataset    
     if is_validation_split:
         split_index = int(0.8 * len(test_dict))
@@ -370,7 +395,11 @@ def infer_parameters(method, ds_name):
         S0_pred, T_pred = estimate_exp_decay(imgseries, method)
                 
         # Get output filenames
-        srcimage_fname = path.basename(sample['image_meta_dict']['filename_or_obj'][0])
+        if ('image_meta_dict' in sample) and ('filename_or_obj' in sample['image_meta_dict']):
+            srcimage_fname = path.basename(sample['image_meta_dict']['filename_or_obj'][0])
+        else:
+            # Try the new way:
+            srcimage_fname = path.basename(sample['image'].meta['filename_or_obj'][0])
         base, file_num_str = split_filename(srcimage_fname)
         
         # Recombine S0 and T into a nifti file
